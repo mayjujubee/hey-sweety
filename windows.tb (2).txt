@@ -1,0 +1,518 @@
+##windows.tb
+
+1. Execute Word count program in Map Reduce
+gedit mapper.py
+
+#!/usr/bin/python
+
+import sys
+
+# reading entire line from STDIN (standard input)
+
+for line in sys.stdin:
+
+word = line.strip().split()
+
+for word in words:
+
+print("%s\t%s" % (word, 1))
+
+cat words.txt | python mapper.py
+
+
+#!/usr/bin/env python
+
+import sys
+
+counts = {}
+
+for line in sys.stdin:
+
+word, count = line.strip().split('\t')
+
+counts[word] = counts.get(word, 0) + int(count)
+
+for word, count in counts.items():
+
+print "%s\t%s" % (word, count)
+
+cat word.txt | python mapper.py | sort | python reducer.py
+
+
+[cloudera@quickstart ~]$ hdfs dfs -mkdir prg1
+
+hdfs dfs -ls
+
+Found 3 items
+
+[cloudera@quickstart ~]$ hdfs dfs -put
+/home/cloudera/word.txt /user/cloudera/prg1
+
+[cloudera@quickstart ~]$ hdfs dfs -ls
+/user/cloudera/prg1
+
+[cloudera@quickstart ~]$ chmod 777 mapper.py reducer.py
+
+[cloudera@quickstart ~]$ hadoop jar
+/usr/lib/hadoop-mapreduce/hadoop-streaming.jar \
+
+-input /user/cloudera/prg1/word.txt \
+
+-output /user/cloudera/prg1/output \
+
+-mapper /home/cloudera/mapper.py \
+
+-reducer /home/cloudera/reducer.py
+
+[cloudera@quickstart ~]$ hdfs dfs -cat
+/user/cloudera/prg1/output/part-00000
+
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar
+
+-input
+
+-output
+
+-mapper
+
+-reducer
+
+
+
+
+
+gedit titanic.txt
+
+Owen,male,22
+
+Hannah,female,38
+
+Laina,female,26
+
+Lily,female,35
+
+Allen,male,35
+
+Jack,male,28
+
+Emma,female,31
+
+Thomas,male,42
+
+Sophia,female,24
+
+William,male,30
+
+
+#!/usr/bin/env python                                  mapper2.py
+
+import sys
+
+import csv
+
+reader = csv.reader(sys.stdin)
+
+for line in reader:
+
+# line[1] is gender, line[2] is age
+
+if len(line) > 2:
+
+print('%s,%s' % (line[1], line[2]))
+
+cat titanic.txt | python mapper2.py
+
+
+
+male,22
+
+male,35
+
+female,38
+
+female,26
+
+female,35
+
+male,28
+
+female,31
+
+male,42
+
+female,24
+
+male,30
+
+
+
+#!/usr/bin/env python                              reducer2.py
+
+import sys
+
+data = {}
+
+for line in sys.stdin:
+
+gender, age = line.strip().split(',')
+
+if gender not in data:
+
+data[gender] = [0, 0]
+
+data[gender][0] += float(age)
+
+data[gender][1] += 1
+
+for gender, values in data.items():
+
+average = values[0] / values[1]
+
+print("%s = %s" % (gender, average))
+
+
+cat titanic.txt | python mapper2.py | sort | python reducer2.py
+
+
+[cloudera@quickstart ~]$ hdfs dfs -mkdir prg2
+
+hdfs dfs -ls
+
+Found 3 items
+
+[cloudera@quickstart ~]$ hdfs dfs -put
+/home/cloudera/titanic.txt /user/cloudera/prg2
+
+[cloudera@quickstart ~]$ hdfs dfs -ls
+/user/cloudera/prg2
+
+Found 1 items
+
+[cloudera@quickstart ~]$ chmod 777 mapper2.py reducer2.py
+
+[cloudera@quickstart ~]$ hadoop jar
+/usr/lib/hadoop-mapreduce/hadoop-streaming.jar
+
+-input /user/cloudera/prg2/titanic.txt
+
+-output /user/cloudera/prg2/output
+
+-mapper /home/cloudera/mapper2.py
+
+-reducer /home/cloudera/reducer2.py
+
+hdfs dfs -cat /user/cloudera/prg2/output/part-00000
+
+
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar
+
+-input
+
+-output
+
+-mapper
+
+-reducer
+
+
+
+##PIG 
+
+First Load the Dataset in word1.txt
+word1.txt
+
+1, pooja, R, 20,
+
+2 , sam , Thomas ,25
+
+3, priya, S, 20
+
+4, pavan, Rao, 20
+
+
+Step 2: START hue, hdfs,yarn
+
+Step 3 : write this in terminal
+
+pig –x local;
+
+
+A = LOAD 'word1.txt' USING PigStorage(',')
+
+AS (id:int, first_name:chararray, last_name:chararray, age:int);
+
+//-- get first letter of first_name
+
+B = FOREACH A GENERATE UPPER(SUBSTRING(first_name, 0, 1)) AS
+first_letter;
+
+C = GROUP B BY first_letter;
+
+D = FOREACH C GENERATE group AS first_letter, COUNT(B) AS count;
+
+E = ORDER D BY count DESC;
+
+F = LIMIT E 1;
+
+DUMP F;
+
+P
+
+S
+
+P
+
+P
+
+(S,1)
+
+(P,3)
+
+(P,3)
+
+(S,1)
+
+Final outout:
+
+(P,3)
+
+
+##Program 4:Hadoop Implementation of file management tasks,
+such as Adding files and directories, retrieving files and
+Deleting files.
+
+
+Create a directory at a given path
+
+hdfs dfs -mkdir lab4
+
+2. List the contents of a directory
+
+hdfs dfs -ls /user/cloudera/lab4
+
+3. Copy a file from local file system to Hadoop file system
+
+hdfs dfs -put /home/cloudera/titanic.txt /user/cloudera/lab4
+
+For uploading a file from linux to Hadoop use put command
+
+hdfs dfs –ls /user/cloudera/lab4
+
+4. See contents of the file
+
+hdfs dfs -cat /user/cloudera/lab4/titanic.txt
+
+5. Remove a directory and files present inside it in hdfs
+
+hdfs dfs -rm -r /user/cloudera/lab4
+
+
+##Convert Spark RDD to Data Frame and
+Dataset
+
+from pyspark import SparkContext
+
+from pyspark.sql import SQLContext
+
+# Start Spark                             rdd.py
+
+sc = SparkContext()
+
+sql = SQLContext(sc)
+
+# Create RDD
+
+rdd = sc.parallelize([
+
+(1, "AIML", 69),
+
+(2, "CS", 72),
+
+(3, "ECE", 99)
+
+])
+
+Convert RDD to DataFrame
+
+df = sql.createDataFrame(rdd, ["No", "Dept", "No_of_students"])
+
+# Show output on screen
+
+df.show()
+
+sc.stop()
+
+spark-submit rdd.py
+
+
+from pyspark import SparkContext
+
+from pyspark.sql import SQLContext
+
+# Step 1: Start Spark
+
+sc = SparkContext()
+
+sql = SQLContext(sc)
+
+# Step 2: Create data
+
+data = [
+
+("Laptop", "Electronics", 50000),
+
+("Phone", "Electronics", 30000),
+
+("Rice", "Grocery", 5000),
+
+("Oil", "Grocery", 2000),
+
+("Chair", "Furniture", 4000),
+
+("Table", "Furniture", 8000)
+
+]
+
+
+Step 3: Create DataFrame
+
+columns = ["Product", "Category", "Sales"]
+
+df = sql.createDataFrame(data, columns)
+
+# Step 4: Display all products
+
+print("All Products:")
+
+df.show()
+
+# Step 5: Filter sales above 5000
+
+print("Products with sales above 5000:")
+
+df.filter(df.Sales > 5000).show()
+
+
+Step 6: Total sales by category
+
+print("Total Sales by Category:")
+
+df.groupBy("Category").sum("Sales").show()
+
+# Step 7: Find the highest-selling product
+
+print("Highest-Selling Product:")
+
+df.orderBy(df.Sales.desc()).show(1)
+
+# Step 8: Sort sales from highest to lowest
+
+print("Products sorted by Sales:")
+
+df.orderBy(df.Sales.desc()).show()
+
+# Step 9: Stop Spark
+
+sc.stop()
+
+
+
+##
+from pyspark import SparkContext
+
+from pyspark.sql import SQLContext
+
+# Step 1: Start Spark
+
+sc = SparkContext()
+
+sql = SQLContext(sc)
+
+# Step 2: Create data
+
+data = [
+
+("Anu", "CSE", 85),
+
+("Bala", "AIML", 90),
+
+("Charan", "IT", 78),
+
+("Deepa", "ECE", 88),
+
+("Esha", "CSE", 92),
+
+("Farhan", "AIML", 81)
+
+]
+
+# Step 3: Create DataFrame
+
+columns = ["Name", "Department", "Marks"]
+
+df = sql.createDataFrame(data, columns)
+
+# Step 4: Show the full DataFrame
+
+print("Full Student Data:")
+
+df.show()
+
+# Step 5: Filter students who scored above 85
+
+print("Students who scored above 85:")
+
+df.filter(df.Marks > 85).show()
+
+# Step 6: Group by department and find average marks
+
+print("Average Marks per Department:")
+
+df.groupBy("Department").avg("Marks").show()
+
+# Step 7: Sort by marks (descending)
+
+print("Students sorted by Marks (highest first):")
+
+df.orderBy(df.Marks.desc()).show()
+
+# Step 8: Stop Spark
+
+sc.stop()
+
+spark-submit students.py
+
+# Step 4: Display only Name and Marks
+
+print("Student Names and Marks:")
+
+df.select("Name", "Marks").show()
+
+# Step 6: Count total students
+
+print("Total Number of Students:")
+
+print(df.count())
+
+# Step 7: Find highest marks
+
+print("Highest Marks:")
+
+df.agg({"Marks": "max"}).show()
+
+# Step 8: Find lowest marks
+
+print("Lowest Marks:")
+
+df.agg({"Marks": "min"}).show()
+
+# Step 9: Stop Spark
+
+sc.stop()
+Page 1 of 7PySpark program that performs Spark operations — filtering, grouping, and sortingPage 1 of 7
+
+
+
+
+
+
