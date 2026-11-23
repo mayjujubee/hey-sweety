@@ -81,7 +81,7 @@ hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar
 
 
 
-gedit titanic.txt
+#2gedit titanic.txt
 
 Owen,male,22
 
@@ -216,7 +216,7 @@ hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar
 
 
 
-##PIG 
+##3PIG 
 
 First Load the Dataset in word1.txt
 word1.txt
@@ -307,7 +307,7 @@ hdfs dfs -cat /user/cloudera/lab4/titanic.txt
 hdfs dfs -rm -r /user/cloudera/lab4
 
 
-##Convert Spark RDD to Data Frame and
+##4Convert Spark RDD to Data Frame and
 Dataset
 
 from pyspark import SparkContext
@@ -344,7 +344,7 @@ sc.stop()
 
 spark-submit rdd.py
 
-
+##retail sales
 from pyspark import SparkContext
 
 from pyspark.sql import SQLContext
@@ -417,7 +417,7 @@ sc.stop()
 
 
 
-##
+##5 save output as txt file students
 from pyspark import SparkContext
 
 from pyspark.sql import SQLContext
@@ -509,7 +509,8 @@ df.agg({"Marks": "min"}).show()
 # Step 9: Stop Spark
 
 sc.stop()
-Page 1 of 7PySpark program that performs Spark operations — filtering, grouping, and sortingPage 1 of 7
+
+
 
 
 
